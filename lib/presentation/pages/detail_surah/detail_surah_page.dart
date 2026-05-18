@@ -1,4 +1,3 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +9,7 @@ import '../../../core/widgets/error_widget.dart';
 import '../../../core/widgets/loading_widget.dart';
 import '../../../domain/entities/ayat_entity.dart';
 import '../../../domain/entities/surah_entity.dart';
+import '../../providers/ayat_audio_provider.dart';
 import '../../providers/bookmark_provider.dart';
 import '../../providers/detail_surah_provider.dart';
 import '../../routes/app_routes.dart';
@@ -25,7 +25,6 @@ class DetailSurahPage extends ConsumerStatefulWidget {
 
 class _DetailSurahPageState extends ConsumerState<DetailSurahPage> {
   bool _showTafsir = false;
-  int? _playingAyat;
 
   @override
   void initState() {
@@ -38,9 +37,16 @@ class _DetailSurahPageState extends ConsumerState<DetailSurahPage> {
   @override
   Widget build(BuildContext context) {
     final detailAsync = ref.watch(detailSurahProvider(widget.nomorSurah));
-    final qari = ref.watch(selectedQariProvider);
+    final qari = ref.watch(settingsProvider).qari;
+    final audioState = ref.watch(ayatAudioProvider);
 
-    return Scaffold(
+    return PopScope(
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) {
+          ref.read(ayatAudioProvider.notifier).stop();
+        }
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: detailAsync.maybeWhen(
           data: (d) => Text(d.namaLatin),
@@ -76,7 +82,10 @@ class _DetailSurahPageState extends ConsumerState<DetailSurahPage> {
                       return _AyatCard(
                         ayat: ayat,
                         nomorSurah: surah.nomor,
-                        isPlaying: _playingAyat == ayat.nomorAyat,
+                        isPlaying: audioState.matches(surah.nomor, ayat.nomorAyat) &&
+                            audioState.isPlaying,
+                        isLoading: audioState.matches(surah.nomor, ayat.nomorAyat) &&
+                            audioState.isLoading,
                         onPlay: () => _playAyat(ayat, qari),
                         onBookmark: () => ref
                             .read(bookmarkListProvider.notifier)
@@ -94,25 +103,17 @@ class _DetailSurahPageState extends ConsumerState<DetailSurahPage> {
           );
         },
       ),
+      ),
     );
   }
 
   Future<void> _playAyat(AyatEntity ayat, String qari) async {
-    final url = ayat.audio?[qari];
-    if (url == null || url.isEmpty) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Audio tidak tersedia untuk qari ini')),
-      );
-      return;
-    }
-
-    final player = ref.read(audioPlayerProvider);
-    setState(() => _playingAyat = ayat.nomorAyat);
-    await player.play(UrlSource(url));
-    player.onPlayerComplete.listen((_) {
-      if (mounted) setState(() => _playingAyat = null);
-    });
+    final error =
+        await ref.read(ayatAudioProvider.notifier).toggleAyat(ayat, qari);
+    if (!mounted || error == null) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(error)),
+    );
   }
 
   void _shareAyat(AyatEntity ayat, String namaSurah) {
@@ -160,6 +161,7 @@ class _AyatCard extends ConsumerWidget {
     required this.ayat,
     required this.nomorSurah,
     required this.isPlaying,
+    this.isLoading = false,
     required this.onPlay,
     required this.onBookmark,
     required this.onShare,
@@ -168,6 +170,7 @@ class _AyatCard extends ConsumerWidget {
   final AyatEntity ayat;
   final int nomorSurah;
   final bool isPlaying;
+  final bool isLoading;
   final VoidCallback onPlay;
   final VoidCallback onBookmark;
   final VoidCallback onShare;
@@ -194,8 +197,17 @@ class _AyatCard extends ConsumerWidget {
                 ),
                 const Spacer(),
                 IconButton(
-                  icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
-                  onPressed: onPlay,
+                  icon: isLoading
+                      ? SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        )
+                      : Icon(isPlaying ? Icons.pause : Icons.play_arrow),
+                  onPressed: isLoading ? null : onPlay,
                   tooltip: 'Putar murottal',
                 ),
                 IconButton(
@@ -282,7 +294,7 @@ class _TafsirSection extends ConsumerWidget {
   }
 }
 
-class _SurahNavigation extends StatelessWidget {
+class _SurahNavigation extends ConsumerWidget {
   const _SurahNavigation({
     this.sebelumnya,
     this.selanjutnya,
@@ -292,7 +304,7 @@ class _SurahNavigation extends StatelessWidget {
   final SurahNavEntity? selanjutnya;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final prev = sebelumnya;
     final next = selanjutnya;
 
@@ -304,11 +316,15 @@ class _SurahNavigation extends StatelessWidget {
             if (prev != null)
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () => Navigator.pushReplacementNamed(
-                    context,
-                    AppRoutes.detailSurah,
-                    arguments: {'nomor': prev.nomor},
-                  ),
+                  onPressed: () async {
+                    await ref.read(ayatAudioProvider.notifier).stop();
+                    if (!context.mounted) return;
+                    Navigator.pushReplacementNamed(
+                      context,
+                      AppRoutes.detailSurah,
+                      arguments: {'nomor': prev.nomor},
+                    );
+                  },
                   icon: const Icon(Icons.chevron_left),
                   label: Text(prev.namaLatin, overflow: TextOverflow.ellipsis),
                 ),
@@ -317,11 +333,15 @@ class _SurahNavigation extends StatelessWidget {
             if (next != null)
               Expanded(
                 child: FilledButton.icon(
-                  onPressed: () => Navigator.pushReplacementNamed(
-                    context,
-                    AppRoutes.detailSurah,
-                    arguments: {'nomor': next.nomor},
-                  ),
+                  onPressed: () async {
+                    await ref.read(ayatAudioProvider.notifier).stop();
+                    if (!context.mounted) return;
+                    Navigator.pushReplacementNamed(
+                      context,
+                      AppRoutes.detailSurah,
+                      arguments: {'nomor': next.nomor},
+                    );
+                  },
                   icon: const Icon(Icons.chevron_right),
                   label: Text(next.namaLatin, overflow: TextOverflow.ellipsis),
                 ),

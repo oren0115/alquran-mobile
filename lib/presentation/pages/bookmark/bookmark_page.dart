@@ -6,6 +6,7 @@ import '../../../core/constants/app_theme.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/widgets/error_widget.dart';
 import '../../../core/widgets/loading_widget.dart';
+import '../../providers/ayat_audio_provider.dart';
 import '../../providers/bookmark_provider.dart';
 import '../../routes/app_routes.dart';
 
@@ -15,6 +16,8 @@ class BookmarkPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bookmarksAsync = ref.watch(bookmarkListProvider);
+    final qari = ref.watch(settingsProvider).qari;
+    final audioState = ref.watch(ayatAudioProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text(AppText.bookmark)),
@@ -33,6 +36,24 @@ class BookmarkPage extends ConsumerWidget {
             itemCount: list.length,
             itemBuilder: (context, index) {
               final ayat = list[index];
+              final surah = ayat.nomorSurah;
+              final isPlaying = surah != null &&
+                  audioState.matches(surah, ayat.nomorAyat) &&
+                  audioState.isPlaying;
+              final isLoading = surah != null &&
+                  audioState.matches(surah, ayat.nomorAyat) &&
+                  audioState.isLoading;
+
+              Future<void> playAyat() async {
+                final error = await ref
+                    .read(ayatAudioProvider.notifier)
+                    .toggleAyat(ayat, qari);
+                if (!context.mounted || error == null) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(error)),
+                );
+              }
+
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),
                 child: InkWell(
@@ -69,14 +90,36 @@ class BookmarkPage extends ConsumerWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: IconButton(
-                            icon: const Icon(Icons.delete_outline),
-                            onPressed: () => ref
-                                .read(bookmarkListProvider.notifier)
-                                .toggleBookmark(ayat),
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            IconButton(
+                              icon: isLoading
+                                  ? SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                      ),
+                                    )
+                                  : Icon(
+                                      isPlaying
+                                          ? Icons.pause
+                                          : Icons.play_arrow,
+                                    ),
+                              onPressed: isLoading ? null : playAyat,
+                              tooltip: 'Putar murottal',
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline),
+                              onPressed: () => ref
+                                  .read(bookmarkListProvider.notifier)
+                                  .toggleBookmark(ayat),
+                            ),
+                          ],
                         ),
                       ],
                     ),

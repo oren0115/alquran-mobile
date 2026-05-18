@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/ayat_entity.dart';
 import '../../injection/dependency_injection.dart';
-import 'detail_surah_provider.dart';
 
 final bookmarkListProvider =
     AsyncNotifierProvider<BookmarkListNotifier, List<AyatEntity>>(
@@ -101,7 +100,6 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final prefs = ref.read(sharedPreferencesProvider);
     await prefs.setString(prefQari, value);
     state = state.copyWith(qari: value);
-    ref.read(selectedQariProvider.notifier).state = value;
   }
 
   Future<void> saveLastRead(int surah, int ayat) async {

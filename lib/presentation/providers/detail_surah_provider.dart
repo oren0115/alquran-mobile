@@ -1,4 +1,3 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/surah_entity.dart';
@@ -37,17 +36,6 @@ class TafsirNotifier extends FamilyAsyncNotifier<TafsirEntity, int> {
     return getTafsir.execute(nomor);
   }
 }
-
-final audioPlayerProvider = Provider<AudioPlayer>((ref) {
-  final player = AudioPlayer();
-  ref.onDispose(player.dispose);
-  return player;
-});
-
-final selectedQariProvider = StateProvider<String>((ref) {
-  final prefs = ref.watch(sharedPreferencesProvider);
-  return prefs.getString(prefQari) ?? '01';
-});
 
 /// Key qari EQuran: 01-06
 const Map<String, String> qariLabels = {

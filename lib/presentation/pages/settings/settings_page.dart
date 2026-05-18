@@ -28,7 +28,7 @@ class SettingsPage extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: DropdownButtonFormField<String>(
-              value: settings.qari,
+              initialValue: settings.qari,
               decoration: const InputDecoration(
                 labelText: AppText.qari,
                 border: OutlineInputBorder(),
