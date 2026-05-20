@@ -37,5 +37,5 @@ class AppText {
   static const String qari = 'Qari Murottal';
   static const String about = 'Tentang Aplikasi';
   static const String aboutDesc =
-      'Aplikasi Al-Quran menggunakan EQuran API (equran.id).';
+      'Aplikasi Al-Quran menggunakan EQuran API (equran.id). dibuat oleh Nyoman';
 }
