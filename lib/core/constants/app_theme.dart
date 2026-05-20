@@ -96,12 +96,14 @@ class AppTheme {
     double fontSize = 24,
     Color? color,
     FontWeight? fontWeight,
+    double? letterSpacing,
   }) {
-    return GoogleFonts.amiri(
+    return GoogleFonts.scheherazadeNew(
       fontSize: fontSize,
       color: color,
-      fontWeight: fontWeight,
-      height: 1.8,
+      fontWeight: fontWeight ?? FontWeight.w600,
+      height: 1.45,
+      letterSpacing: letterSpacing ?? 0.8,
     );
   }
 }

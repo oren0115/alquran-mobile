@@ -11,6 +11,16 @@ class AppText {
   static const String searchHint = 'Cari surah...';
   static const String tafsir = 'Tafsir';
   static const String lastRead = 'Terakhir dibaca';
+  static const String allSurah = 'Semua surah';
+  static const String sectionAppearance = 'Tampilan';
+  static const String sectionAudio = 'Audio';
+  static const String sectionReading = 'Bacaan';
+  static const String sectionAbout = 'Tentang';
+  static const String sectionAyat = 'Ayat';
+  static const String sectionTafsir = 'Tafsir';
+  static const String darkModeSubtitle = 'Aktifkan tema gelap';
+  static const String tapToOpenSurah = 'Ketuk untuk buka surah';
+  static const String copiedToClipboard = 'Ayat disalin ke clipboard';
 
   // Pesan
   static const String loading = 'Memuat...';

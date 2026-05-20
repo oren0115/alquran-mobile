@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text.dart';
-import '../../../core/constants/app_theme.dart';
 import '../../../core/utils/helpers.dart';
+import '../../../core/widgets/ayat_card.dart';
+import '../../../core/widgets/empty_state_widget.dart';
 import '../../../core/widgets/error_widget.dart';
 import '../../../core/widgets/loading_widget.dart';
+import '../../../core/widgets/section_header.dart';
 import '../../providers/ayat_audio_provider.dart';
 import '../../providers/bookmark_provider.dart';
 import '../../routes/app_routes.dart';
@@ -29,13 +32,23 @@ class BookmarkPage extends ConsumerWidget {
         ),
         data: (list) {
           if (list.isEmpty) {
-            return const Center(child: Text(AppText.emptyBookmark));
+            return const EmptyStateWidget(
+              message: AppText.emptyBookmark,
+              icon: Icons.bookmark_border_rounded,
+            );
           }
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: list.length,
+            padding: const EdgeInsets.only(bottom: AppSpacing.md),
+            itemCount: list.length + 1,
             itemBuilder: (context, index) {
-              final ayat = list[index];
+              if (index == 0) {
+                return SectionHeader(
+                  title: '${AppText.bookmark} (${list.length})',
+                  topPadding: AppSpacing.sm,
+                );
+              }
+
+              final ayat = list[index - 1];
               final surah = ayat.nomorSurah;
               final isPlaying = surah != null &&
                   audioState.matches(surah, ayat.nomorAyat) &&
@@ -54,77 +67,25 @@ class BookmarkPage extends ConsumerWidget {
                 );
               }
 
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: InkWell(
-                  onTap: () {
-                    if (ayat.nomorSurah != null) {
-                      AppRoutes.goToDetailSurah(context, ayat.nomorSurah!);
-                    }
-                  },
-                  borderRadius: BorderRadius.circular(12),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${ayat.namaSurahLatin} — Ayat ${ayat.nomorAyat}',
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          ayat.teksArab,
-                          style: AppTheme.arabicTextStyle(fontSize: 22),
-                          textAlign: TextAlign.right,
-                          textDirection: TextDirection.rtl,
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          ayat.teksIndonesia,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            IconButton(
-                              icon: isLoading
-                                  ? SizedBox(
-                                      width: 24,
-                                      height: 24,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary,
-                                      ),
-                                    )
-                                  : Icon(
-                                      isPlaying
-                                          ? Icons.pause
-                                          : Icons.play_arrow,
-                                    ),
-                              onPressed: isLoading ? null : playAyat,
-                              tooltip: 'Putar murottal',
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete_outline),
-                              onPressed: () => ref
-                                  .read(bookmarkListProvider.notifier)
-                                  .toggleBookmark(ayat),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+              return AyatCard(
+                nomorAyat: ayat.nomorAyat,
+                title: '${ayat.namaSurahLatin} — Ayat ${ayat.nomorAyat}',
+                teksArab: ayat.teksArab,
+                teksIndonesia: ayat.teksIndonesia,
+                maxArabLines: 3,
+                maxIndonesiaLines: 2,
+                isPlaying: isPlaying,
+                isLoading: isLoading,
+                onPlay: playAyat,
+                onDelete: () => ref
+                    .read(bookmarkListProvider.notifier)
+                    .toggleBookmark(ayat),
+                onTap: ayat.nomorSurah != null
+                    ? () => AppRoutes.goToDetailSurah(
+                          context,
+                          ayat.nomorSurah!,
+                        )
+                    : null,
               );
             },
           );
