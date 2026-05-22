@@ -8,11 +8,15 @@ final detailSurahProvider = AsyncNotifierProvider.family<
   DetailSurahNotifier.new,
 );
 
-class DetailSurahNotifier extends FamilyAsyncNotifier<DetailSurahEntity, int> {
+class DetailSurahNotifier extends AsyncNotifier<DetailSurahEntity> {
+  DetailSurahNotifier(this.arg);
+
+  final int arg;
+
   @override
-  Future<DetailSurahEntity> build(int nomor) async {
+  Future<DetailSurahEntity> build() async {
     final getDetail = ref.watch(getDetailSurahProvider);
-    return getDetail.execute(nomor);
+    return getDetail.execute(arg);
   }
 
   Future<void> refresh() async {
@@ -29,11 +33,15 @@ final tafsirProvider =
   TafsirNotifier.new,
 );
 
-class TafsirNotifier extends FamilyAsyncNotifier<TafsirEntity, int> {
+class TafsirNotifier extends AsyncNotifier<TafsirEntity> {
+  TafsirNotifier(this.arg);
+
+  final int arg;
+
   @override
-  Future<TafsirEntity> build(int nomor) async {
+  Future<TafsirEntity> build() async {
     final getTafsir = ref.watch(getTafsirProvider);
-    return getTafsir.execute(nomor);
+    return getTafsir.execute(arg);
   }
 }
 

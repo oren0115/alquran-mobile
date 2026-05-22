@@ -129,7 +129,7 @@ class _SurahListTab extends ConsumerWidget {
                 SurahSearchSliver(
                   hintText: AppText.searchHint,
                   onChanged: (value) {
-                    ref.read(searchQueryProvider.notifier).state = value;
+                    ref.read(searchQueryProvider.notifier).setQuery(value);
                   },
                 ),
                 if (showSections)

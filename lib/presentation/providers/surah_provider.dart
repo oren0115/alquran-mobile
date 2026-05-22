@@ -3,7 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/surah_entity.dart';
 import '../../injection/dependency_injection.dart';
 
-final searchQueryProvider = StateProvider<String>((ref) => '');
+final searchQueryProvider =
+    NotifierProvider<SearchQueryNotifier, String>(SearchQueryNotifier.new);
+
+class SearchQueryNotifier extends Notifier<String> {
+  @override
+  String build() => '';
+
+  void setQuery(String query) => state = query;
+}
 
 final surahListProvider =
     AsyncNotifierProvider<SurahListNotifier, List<SurahEntity>>(
