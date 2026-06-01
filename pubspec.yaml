@@ -1,6 +1,6 @@
 name: al_quran_app
 description: Aplikasi Al-Quran dengan Clean Architecture dan EQuran API.
-publish_to: 'none'
+publish_to: "none"
 version: 1.0.0+1
 
 environment:
@@ -17,7 +17,7 @@ dependencies:
   shared_preferences: ^2.3.4
   equatable: ^2.0.7
   intl: ^0.20.2
-  just_audio: ^0.10.5
+  just_audio: ^0.10.0
   just_audio_windows: ^0.2.3
   google_fonts: ^8.1.0
 
