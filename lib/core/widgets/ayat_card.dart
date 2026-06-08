@@ -1,41 +1,43 @@
 import 'package:flutter/material.dart';
 
+import '../constants/app_colors.dart';
 import '../constants/app_spacing.dart';
 import '../constants/app_theme.dart';
-import 'app_surface_card.dart';
+import '../utils/arabic_numerals.dart';
+import 'q_card.dart';
 
 class AyatCard extends StatelessWidget {
   const AyatCard({
     super.key,
     required this.nomorAyat,
-    required this.title,
     required this.teksArab,
     required this.teksIndonesia,
     this.teksLatin,
+    this.title,
     this.onTap,
+    this.isHighlighted = false,
     this.isPlaying = false,
     this.isLoading = false,
     this.onPlay,
     this.isBookmarked = false,
     this.onBookmark,
-    this.onShare,
     this.onDelete,
     this.maxArabLines,
     this.maxIndonesiaLines,
   });
 
   final int nomorAyat;
-  final String title;
+  final String? title;
   final String teksArab;
   final String teksIndonesia;
   final String? teksLatin;
   final VoidCallback? onTap;
+  final bool isHighlighted;
   final bool isPlaying;
   final bool isLoading;
   final VoidCallback? onPlay;
   final bool isBookmarked;
   final VoidCallback? onBookmark;
-  final VoidCallback? onShare;
   final VoidCallback? onDelete;
   final int? maxArabLines;
   final int? maxIndonesiaLines;
@@ -43,112 +45,137 @@ class AyatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final primary = theme.colorScheme.primary;
-    return AppSurfaceCard(
-      onTap: onTap,
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        AppSpacing.sm,
-        AppSpacing.xs,
-        AppSpacing.sm,
+    final isDark = theme.brightness == Brightness.dark;
+    final highlighted = isHighlighted || isPlaying;
+
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          teksArab,
+          style: AppTheme.arabicTextStyle(
+            fontSize: 22,
+            color: highlighted
+                ? AppColors.emeraldDark
+                : (isDark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.textPrimary),
+          ),
+          textAlign: TextAlign.right,
+          textDirection: TextDirection.rtl,
+          maxLines: maxArabLines,
+          overflow: maxArabLines != null ? TextOverflow.ellipsis : null,
+        ),
+        if (teksLatin != null && teksLatin!.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text(
+            teksLatin!,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontStyle: FontStyle.italic,
+              fontSize: 12,
+              color: AppColors.gold,
+            ),
+          ),
+        ],
+        const SizedBox(height: 4),
+        Text(
+          teksIndonesia,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontSize: 12,
+            height: 1.5,
+            color: highlighted
+                ? AppColors.emerald
+                : (isDark
+                    ? AppColors.darkTextSecondary
+                    : AppColors.textSecondary),
+          ),
+          maxLines: maxIndonesiaLines,
+          overflow:
+              maxIndonesiaLines != null ? TextOverflow.ellipsis : null,
+        ),
+      ],
+    );
+
+    return QCard(
+      variant: highlighted ? QCardVariant.green : QCardVariant.normal,
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: 3,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Row(
+                children: [
+                  if (onBookmark != null)
+                    _ActionIcon(
+                      icon: isBookmarked
+                          ? Icons.bookmark
+                          : Icons.bookmark_outline,
+                      onPressed: onBookmark,
+                    ),
+                  if (onPlay != null)
+                    _ActionIcon(
+                      isLoading: isLoading,
+                      icon: isPlaying ? Icons.volume_up : Icons.volume_up_outlined,
+                      onPressed: isLoading ? null : onPlay,
+                    ),
+                  if (onDelete != null)
+                    _ActionIcon(
+                      icon: Icons.delete_outline,
+                      onPressed: onDelete,
+                    ),
+                ],
+              ),
               Container(
-                width: 28,
-                height: 28,
+                width: 22,
+                height: 22,
                 decoration: BoxDecoration(
-                  color: primary.withValues(alpha: 0.12),
+                  color: highlighted
+                      ? AppColors.emeraldMedium
+                      : (isDark
+                          ? AppColors.emeraldDark.withValues(alpha: 0.5)
+                          : AppColors.emeraldLight),
                   shape: BoxShape.circle,
+                  border: highlighted
+                      ? null
+                      : Border.all(
+                          color: AppColors.emeraldMedium,
+                          width: 0.5,
+                        ),
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  '$nomorAyat',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: primary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
+                  ArabicNumerals.fromInt(nomorAyat),
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w500,
+                    color: highlighted
+                        ? AppColors.emeraldLight
+                        : AppColors.emeraldDark,
                   ),
                 ),
               ),
-              const SizedBox(width: AppSpacing.xs),
-              Expanded(
-                child: Text(
-                  title,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                    color: primary,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (onPlay != null)
-                _ActionIcon(
-                  isLoading: isLoading,
-                  icon: isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                  onPressed: isLoading ? null : onPlay,
-                  tooltip: 'Putar murottal',
-                ),
-              if (onBookmark != null)
-                _ActionIcon(
-                  icon: isBookmarked
-                      ? Icons.bookmark_rounded
-                      : Icons.bookmark_outline_rounded,
-                  onPressed: onBookmark,
-                ),
-              if (onShare != null)
-                _ActionIcon(
-                  icon: Icons.share_outlined,
-                  onPressed: onShare,
-                ),
-              if (onDelete != null)
-                _ActionIcon(
-                  icon: Icons.delete_outline_rounded,
-                  onPressed: onDelete,
-                ),
             ],
           ),
           const SizedBox(height: AppSpacing.xs),
-          Padding(
-            padding: const EdgeInsets.only(right: AppSpacing.xs),
-            child: Text(
-              teksArab,
-              style: AppTheme.arabicTextStyle(fontSize: 26),
-              textAlign: TextAlign.right,
-              textDirection: TextDirection.rtl,
-              maxLines: maxArabLines,
-              overflow: maxArabLines != null ? TextOverflow.ellipsis : null,
-            ),
-          ),
-          if (teksLatin != null && teksLatin!.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              teksLatin!,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontStyle: FontStyle.italic,
-                fontSize: 13,
-                color: theme.colorScheme.secondary.withValues(alpha: 0.85),
-                height: 1.4,
+          if (onTap != null)
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: onTap,
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: content,
+                ),
               ),
-            ),
-          ],
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            teksIndonesia,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontSize: 15,
-              height: 1.45,
-              color: theme.colorScheme.onSurface,
-            ),
-            maxLines: maxIndonesiaLines,
-            overflow:
-                maxIndonesiaLines != null ? TextOverflow.ellipsis : null,
-          ),
+            )
+          else
+            content,
         ],
       ),
     );
@@ -160,34 +187,36 @@ class _ActionIcon extends StatelessWidget {
     required this.icon,
     this.onPressed,
     this.isLoading = false,
-    this.tooltip,
   });
 
   final IconData icon;
   final VoidCallback? onPressed;
   final bool isLoading;
-  final String? tooltip;
 
   @override
   Widget build(BuildContext context) {
-    final primary = Theme.of(context).colorScheme.primary;
-
-    return IconButton(
-      icon: isLoading
-          ? SizedBox(
-              width: 22,
-              height: 22,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: primary,
-              ),
-            )
-          : Icon(icon, size: 22),
-      onPressed: onPressed,
-      tooltip: tooltip,
-      visualDensity: VisualDensity.compact,
-      padding: const EdgeInsets.all(AppSpacing.xs),
-      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(20),
+        child: SizedBox(
+          width: 40,
+          height: 40,
+          child: Center(
+            child: isLoading
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.emerald,
+                    ),
+                  )
+                : Icon(icon, size: 20, color: AppColors.emerald),
+          ),
+        ),
+      ),
     );
   }
 }

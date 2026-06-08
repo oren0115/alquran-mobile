@@ -4,114 +4,129 @@ import '../../domain/entities/surah_entity.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_spacing.dart';
 import '../constants/app_theme.dart';
+import '../utils/arabic_numerals.dart';
 import '../utils/formatter.dart';
-import 'app_surface_card.dart';
 
+/// Item daftar surah sesuai wireframe — baris dengan divider.
+class SurahListTile extends StatelessWidget {
+  const SurahListTile({
+    super.key,
+    required this.surah,
+    required this.onTap,
+  });
+
+  final SurahEntity surah;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xs,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? AppColors.emeraldDark.withValues(alpha: 0.5)
+                    : AppColors.emeraldLight,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: AppColors.emeraldMedium,
+                  width: 0.5,
+                ),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                ArabicNumerals.fromInt(surah.nomor),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.emeraldDark,
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          surah.namaLatin,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        surah.nama,
+                        style: AppTheme.arabicTextStyle(
+                          fontSize: 16,
+                          color: AppColors.emerald,
+                          fontWeight: FontWeight.w500,
+                          height: 1.3,
+                        ),
+                        textDirection: TextDirection.rtl,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    Formatter.surahSubtitle(
+                      tempatTurun: surah.tempatTurun,
+                      jumlahAyat: surah.jumlahAyat,
+                    ),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Kartu surah untuk "lanjut membaca" di beranda.
 class SurahCard extends StatelessWidget {
   const SurahCard({
     super.key,
     required this.surah,
     required this.onTap,
     this.compact = false,
+    this.ayatProgress,
   });
 
   final SurahEntity surah;
   final VoidCallback onTap;
   final bool compact;
+  final double? ayatProgress;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final primary = theme.colorScheme.primary;
-    final numberSize = compact ? 38.0 : 40.0;
+    if (compact) {
+      return SurahListTile(surah: surah, onTap: onTap);
+    }
 
-    return AppSurfaceCard(
-      onTap: onTap,
-      margin: EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: compact ? 3 : 4,
-      ),
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: compact ? AppSpacing.sm : AppSpacing.sm + 2,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: numberSize,
-            height: numberSize,
-            decoration: BoxDecoration(
-              color: primary.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              '${surah.nomor}',
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: primary,
-                fontWeight: FontWeight.bold,
-                fontSize: compact ? 13 : 14,
-              ),
-            ),
-          ),
-          SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  surah.namaLatin,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    fontSize: compact ? 16 : 18,
-                    height: 1.2,
-                  ),
-                ),
-                SizedBox(height: compact ? 2 : 4),
-                Text(
-                  Formatter.surahSubtitle(
-                    tempatTurun: surah.tempatTurun,
-                    jumlahAyat: surah.jumlahAyat,
-                  ),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: isDark
-                        ? AppColors.darkTextSecondary
-                        : AppColors.textSecondary,
-                    fontSize: 12,
-                    height: 1.3,
-                  ),
-                ),
-                SizedBox(height: compact ? 1 : 2),
-                Text(
-                  surah.arti,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: primary.withValues(alpha: 0.75),
-                    fontSize: 13,
-                    height: 1.3,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(
-              left: AppSpacing.sm,
-              right: AppSpacing.xs,
-            ),
-            child: Text(
-              surah.nama,
-              style: AppTheme.arabicTextStyle(
-                fontSize: compact ? 22 : 26,
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurface,
-              ),
-              textAlign: TextAlign.right,
-              textDirection: TextDirection.rtl,
-            ),
-          ),
-        ],
-      ),
-    );
+    return SurahListTile(surah: surah, onTap: onTap);
   }
 }

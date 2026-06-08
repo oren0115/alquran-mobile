@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/utils/juz_helper.dart';
 import '../../domain/entities/surah_entity.dart';
 import '../../injection/dependency_injection.dart';
 
@@ -26,13 +27,43 @@ class SurahListNotifier extends AsyncNotifier<List<SurahEntity>> {
   }
 }
 
+enum SurahFilter { all, juz, makkiyah, madaniyah }
+
+final surahFilterProvider =
+    StateProvider<SurahFilter>((ref) => SurahFilter.all);
+
+final selectedJuzProvider = StateProvider<int?>((ref) => null);
+
 final filteredSurahProvider = Provider<AsyncValue<List<SurahEntity>>>((ref) {
   final asyncList = ref.watch(surahListProvider);
   final query = ref.watch(searchQueryProvider).trim().toLowerCase();
+  final filter = ref.watch(surahFilterProvider);
+  final selectedJuz = ref.watch(selectedJuzProvider);
 
   return asyncList.whenData((list) {
-    if (query.isEmpty) return list;
-    return list.where((s) {
+    var result = list;
+
+    switch (filter) {
+      case SurahFilter.makkiyah:
+        result = result
+            .where((s) => s.tempatTurun.toLowerCase() == 'mekah')
+            .toList();
+      case SurahFilter.madaniyah:
+        result = result
+            .where((s) => s.tempatTurun.toLowerCase() == 'madinah')
+            .toList();
+      case SurahFilter.juz:
+        if (selectedJuz != null) {
+          result = result
+              .where((s) => JuzHelper.surahInJuz(s.nomor, selectedJuz))
+              .toList();
+        }
+      case SurahFilter.all:
+        break;
+    }
+
+    if (query.isEmpty) return result;
+    return result.where((s) {
       return s.namaLatin.toLowerCase().contains(query) ||
           s.arti.toLowerCase().contains(query) ||
           s.nama.contains(query) ||

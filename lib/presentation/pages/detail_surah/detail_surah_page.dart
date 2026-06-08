@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text.dart';
+import '../../../core/constants/app_theme.dart';
 import '../../../core/utils/helpers.dart';
-import '../../../core/widgets/app_surface_card.dart';
+import '../../../core/utils/html_utils.dart';
+import '../../../core/widgets/app_topbar.dart';
 import '../../../core/widgets/ayat_card.dart';
 import '../../../core/widgets/error_widget.dart';
 import '../../../core/widgets/loading_widget.dart';
-import '../../../core/widgets/section_header.dart';
-import '../../../core/widgets/surah_header_banner.dart';
-import '../../../core/widgets/surah_nav_bar.dart';
+import '../../../core/widgets/q_card.dart';
 import '../../../domain/entities/ayat_entity.dart';
 import '../../providers/ayat_audio_provider.dart';
 import '../../providers/bookmark_provider.dart';
@@ -46,96 +46,117 @@ class _DetailSurahPageState extends ConsumerState<DetailSurahPage> {
 
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
-        if (didPop) {
-          ref.read(ayatAudioProvider.notifier).stop();
-        }
+        if (didPop) ref.read(ayatAudioProvider.notifier).stop();
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: detailAsync.maybeWhen(
-            data: (d) => Text(d.namaLatin),
-            orElse: () => const Text('...'),
-          ),
-          actions: [
-            IconButton(
-              icon: Icon(
-                _showTafsir ? Icons.article_rounded : Icons.article_outlined,
-                size: 22,
-              ),
-              tooltip: AppText.tafsir,
-              onPressed: () => setState(() => _showTafsir = !_showTafsir),
-            ),
-          ],
-        ),
+        backgroundColor: AppColors.background,
         body: detailAsync.when(
-          loading: () => const LoadingWidget(),
-          error: (e, _) => AppErrorWidget(
-            message: Helpers.extractErrorMessage(e),
-            onRetry: () => ref
-                .read(detailSurahProvider(widget.nomorSurah).notifier)
-                .refresh(),
+          loading: () => const Scaffold(body: LoadingWidget()),
+          error: (e, _) => Scaffold(
+            body: AppErrorWidget(
+              message: Helpers.extractErrorMessage(e),
+              onRetry: () => ref
+                  .read(detailSurahProvider(widget.nomorSurah).notifier)
+                  .refresh(),
+            ),
           ),
           data: (surah) {
             return Column(
               children: [
-                SurahHeaderBanner.fromDetail(surah),
+                AppTopBar(
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: AppColors.emeraldSubtext),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  title: surah.namaLatin,
+                  subtitleWidget: _SurahSubtitle(
+                    namaArab: surah.nama,
+                    jumlahAyat: surah.jumlahAyat,
+                  ),
+                  actions: [
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert, color: AppColors.emeraldSubtext),
+                      onSelected: (value) {
+                        if (value == 'tafsir') {
+                          setState(() => _showTafsir = !_showTafsir);
+                        } else if (value == 'murottal') {
+                          AppRoutes.goToMurottal(context, surah.nomor);
+                        }
+                      },
+                      itemBuilder: (_) => [
+                        PopupMenuItem(
+                          value: 'tafsir',
+                          child: Text(_showTafsir ? 'Tutup Tafsir' : AppText.tafsir),
+                        ),
+                        const PopupMenuItem(
+                          value: 'murottal',
+                          child: Text(AppText.murottal),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                if (!_showTafsir && surah.nomor != 9)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                    decoration: const BoxDecoration(
+                      color: AppColors.goldLight,
+                      border: Border(
+                        bottom: BorderSide(color: AppColors.goldMedium, width: 0.5),
+                      ),
+                    ),
+                    child: Text(
+                      AppText.bismillah,
+                      textAlign: TextAlign.center,
+                      textDirection: TextDirection.rtl,
+                      style: AppTheme.arabicTextStyle(
+                        fontSize: 18,
+                        color: AppColors.goldDark,
+                      ),
+                    ),
+                  ),
                 Expanded(
                   child: _showTafsir
                       ? _TafsirSection(nomor: surah.nomor)
                       : ListView.builder(
-                          padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                          padding: const EdgeInsets.only(
+                            top: AppSpacing.xs,
+                            bottom: AppSpacing.xs,
+                          ),
                           itemCount: surah.ayat.length,
                           itemBuilder: (context, index) {
                             final ayat = surah.ayat[index];
+                            final playing = audioState.matches(
+                                  surah.nomor,
+                                  ayat.nomorAyat,
+                                ) &&
+                                audioState.isPlaying;
                             return _DetailAyatTile(
                               ayat: ayat,
                               nomorSurah: surah.nomor,
-                              namaSurahLatin: surah.namaLatin,
-                              isPlaying: audioState.matches(
-                                    surah.nomor,
-                                    ayat.nomorAyat,
-                                  ) &&
-                                  audioState.isPlaying,
+                              isHighlighted: playing,
+                              isPlaying: playing,
                               isLoading: audioState.matches(
                                     surah.nomor,
                                     ayat.nomorAyat,
                                   ) &&
                                   audioState.isLoading,
                               onPlay: () => _playAyat(ayat, qari),
-                              onBookmark: () => ref
-                                  .read(bookmarkListProvider.notifier)
-                                  .toggleBookmark(ayat),
-                              onShare: () =>
-                                  _shareAyat(ayat, surah.namaLatin),
+                              onBookmark: () => _toggleBookmark(ayat),
                             );
                           },
                         ),
                 ),
-                SurahNavBar(
-                  sebelumnya: surah.suratSebelumnya,
-                  selanjutnya: surah.suratSelanjutnya,
-                  onPrev: surah.suratSebelumnya == null
-                      ? null
-                      : () => _navigateSurah(surah.suratSebelumnya!.nomor),
-                  onNext: surah.suratSelanjutnya == null
-                      ? null
-                      : () => _navigateSurah(surah.suratSelanjutnya!.nomor),
-                ),
+                if (!_showTafsir)
+                  _ReadingToolbar(
+                    onAudio: () => AppRoutes.goToMurottal(context, surah.nomor),
+                  ),
               ],
             );
           },
         ),
       ),
-    );
-  }
-
-  Future<void> _navigateSurah(int nomor) async {
-    await ref.read(ayatAudioProvider.notifier).stop();
-    if (!mounted) return;
-    Navigator.pushReplacementNamed(
-      context,
-      AppRoutes.detailSurah,
-      arguments: {'nomor': nomor},
     );
   }
 
@@ -148,13 +169,24 @@ class _DetailSurahPageState extends ConsumerState<DetailSurahPage> {
     );
   }
 
-  void _shareAyat(AyatEntity ayat, String namaSurah) {
-    final text =
-        '${ayat.teksArab}\n\n${ayat.teksIndonesia}\n\n— $namaSurah : ${ayat.nomorAyat}';
-    Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text(AppText.copiedToClipboard)),
-    );
+  Future<void> _toggleBookmark(AyatEntity ayat) async {
+    try {
+      final added =
+          await ref.read(bookmarkListProvider.notifier).toggleBookmark(ayat);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            added ? AppText.bookmarkAdded : AppText.bookmarkRemoved,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    }
   }
 }
 
@@ -162,42 +194,141 @@ class _DetailAyatTile extends ConsumerWidget {
   const _DetailAyatTile({
     required this.ayat,
     required this.nomorSurah,
-    required this.namaSurahLatin,
+    required this.isHighlighted,
     required this.isPlaying,
     required this.isLoading,
     required this.onPlay,
     required this.onBookmark,
-    required this.onShare,
   });
 
   final AyatEntity ayat;
   final int nomorSurah;
-  final String namaSurahLatin;
+  final bool isHighlighted;
   final bool isPlaying;
   final bool isLoading;
   final VoidCallback onPlay;
   final VoidCallback onBookmark;
-  final VoidCallback onShare;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bookmarkAsync = ref.watch(
-      isBookmarkedProvider((surah: nomorSurah, ayat: ayat.nomorAyat)),
+    final bookmarks = ref.watch(bookmarkListProvider).valueOrNull ?? [];
+    final isBookmarked = bookmarks.any(
+      (b) => b.nomorSurah == nomorSurah && b.nomorAyat == ayat.nomorAyat,
     );
-    final isBookmarked = bookmarkAsync.value ?? false;
 
     return AyatCard(
       nomorAyat: ayat.nomorAyat,
-      title: '$namaSurahLatin — Ayat ${ayat.nomorAyat}',
       teksArab: ayat.teksArab,
-      teksLatin: ayat.teksLatin,
       teksIndonesia: ayat.teksIndonesia,
+      isHighlighted: isHighlighted,
       isPlaying: isPlaying,
       isLoading: isLoading,
       onPlay: onPlay,
       isBookmarked: isBookmarked,
       onBookmark: onBookmark,
-      onShare: onShare,
+    );
+  }
+}
+
+class _ReadingToolbar extends StatelessWidget {
+  const _ReadingToolbar({required this.onAudio});
+
+  final VoidCallback onAudio;
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.sm,
+        AppSpacing.md,
+        AppSpacing.sm + bottomInset,
+      ),
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.border, width: 0.5)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _ToolbarItem(icon: Icons.text_fields, label: AppText.toolbarFont),
+          _ToolbarItem(
+            icon: Icons.headphones_outlined,
+            label: AppText.toolbarAudio,
+            onTap: onAudio,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ToolbarItem extends StatelessWidget {
+  const _ToolbarItem({
+    required this.icon,
+    required this.label,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 18, color: AppColors.emerald),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SurahSubtitle extends StatelessWidget {
+  const _SurahSubtitle({
+    required this.namaArab,
+    required this.jumlahAyat,
+  });
+
+  final String namaArab;
+  final int jumlahAyat;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text.rich(
+      TextSpan(
+        style: const TextStyle(
+          color: AppColors.emeraldSubtext,
+          fontSize: 13,
+          decoration: TextDecoration.none,
+        ),
+        children: [
+          TextSpan(
+            text: namaArab,
+            style: AppTheme.arabicTextStyle(
+              fontSize: 13,
+              color: AppColors.emeraldSubtext,
+              fontWeight: FontWeight.w500,
+              height: 1.3,
+            ),
+          ),
+          TextSpan(text: ' · $jumlahAyat ayah'),
+        ],
+      ),
     );
   }
 }
@@ -218,39 +349,49 @@ class _TafsirSection extends ConsumerWidget {
         onRetry: () => ref.invalidate(tafsirProvider(nomor)),
       ),
       data: (tafsir) => ListView.builder(
-        padding: const EdgeInsets.only(bottom: AppSpacing.md),
+        padding: const EdgeInsets.all(AppSpacing.sm),
         itemCount: tafsir.tafsir.length + 1,
         itemBuilder: (context, index) {
           if (index == 0) {
-            return const SectionHeader(
-              title: AppText.sectionTafsir,
-              topPadding: AppSpacing.xs,
+            return const Padding(
+              padding: EdgeInsets.only(bottom: AppSpacing.xs),
+              child: Text(
+                AppText.sectionTafsir,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.emeraldDark,
+                  decoration: TextDecoration.none,
+                ),
+              ),
             );
           }
-          final item = tafsir.tafsir[index - 1];
-          final theme = Theme.of(context);
-          final primary = theme.colorScheme.primary;
 
-          return AppSurfaceCard(
-            animatePress: false,
+          final item = tafsir.tafsir[index - 1];
+          final plainText = HtmlUtils.toPlainText(item.teks);
+
+          return QCard(
+            margin: const EdgeInsets.only(bottom: AppSpacing.xs),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Ayat ${item.ayat}',
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
+                  style: const TextStyle(
                     fontSize: 14,
-                    color: primary,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.emerald,
+                    decoration: TextDecoration.none,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  item.teks,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontSize: 15,
-                    height: 1.5,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.9),
+                  plainText,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    height: 1.55,
+                    color: AppColors.textPrimary,
+                    decoration: TextDecoration.none,
                   ),
                 ),
               ],

@@ -23,21 +23,24 @@ class BookmarkListNotifier extends AsyncNotifier<List<AyatEntity>> {
     });
   }
 
-  Future<void> toggleBookmark(AyatEntity ayat) async {
+  Future<bool> toggleBookmark(AyatEntity ayat) async {
     final ds = ref.read(bookmarkLocalDataSourceProvider);
-    if (ayat.nomorSurah == null) return;
+    if (ayat.nomorSurah == null || ayat.namaSurahLatin == null) {
+      throw Exception('Data surah ayat tidak lengkap');
+    }
 
-    final exists = await ds.isBookmarked(
-      ayat.nomorSurah!,
-      ayat.nomorAyat,
-    );
+    final surah = ayat.nomorSurah!;
+    final exists = await ds.isBookmarked(surah, ayat.nomorAyat);
 
     if (exists) {
-      await ds.removeBookmark(ayat.nomorSurah!, ayat.nomorAyat);
+      await ds.removeBookmark(surah, ayat.nomorAyat);
     } else {
       await ds.addBookmark(ayat);
     }
+
+    ref.invalidate(isBookmarkedProvider((surah: surah, ayat: ayat.nomorAyat)));
     await refresh();
+    return !exists;
   }
 }
 
@@ -52,25 +55,21 @@ final settingsProvider =
 
 class SettingsState {
   const SettingsState({
-    this.isDarkMode = false,
     this.qari = '01',
     this.lastReadSurah,
     this.lastReadAyat,
   });
 
-  final bool isDarkMode;
   final String qari;
   final int? lastReadSurah;
   final int? lastReadAyat;
 
   SettingsState copyWith({
-    bool? isDarkMode,
     String? qari,
     int? lastReadSurah,
     int? lastReadAyat,
   }) {
     return SettingsState(
-      isDarkMode: isDarkMode ?? this.isDarkMode,
       qari: qari ?? this.qari,
       lastReadSurah: lastReadSurah ?? this.lastReadSurah,
       lastReadAyat: lastReadAyat ?? this.lastReadAyat,
@@ -83,17 +82,10 @@ class SettingsNotifier extends Notifier<SettingsState> {
   SettingsState build() {
     final prefs = ref.watch(sharedPreferencesProvider);
     return SettingsState(
-      isDarkMode: prefs.getBool(prefDarkMode) ?? false,
       qari: prefs.getString(prefQari) ?? '01',
       lastReadSurah: prefs.getInt(prefLastReadSurah),
       lastReadAyat: prefs.getInt(prefLastReadAyat),
     );
-  }
-
-  Future<void> setDarkMode(bool value) async {
-    final prefs = ref.read(sharedPreferencesProvider);
-    await prefs.setBool(prefDarkMode, value);
-    state = state.copyWith(isDarkMode: value);
   }
 
   Future<void> setQari(String value) async {

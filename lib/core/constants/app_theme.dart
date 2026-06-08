@@ -9,44 +9,58 @@ class AppTheme {
   static ThemeData get light => ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primary,
-          primary: AppColors.primary,
-          secondary: AppColors.accent,
+        colorScheme: const ColorScheme.light(
+          primary: AppColors.emerald,
+          onPrimary: AppColors.emeraldLight,
+          primaryContainer: AppColors.emeraldLight,
+          onPrimaryContainer: AppColors.emeraldDark,
+          secondary: AppColors.goldMedium,
+          onSecondary: AppColors.goldDark,
+          secondaryContainer: AppColors.goldLight,
+          onSecondaryContainer: AppColors.goldDark,
           surface: AppColors.surface,
+          onSurface: AppColors.textPrimary,
           error: AppColors.error,
         ),
         scaffoldBackgroundColor: AppColors.background,
         appBarTheme: const AppBarTheme(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          backgroundColor: AppColors.emerald,
+          foregroundColor: AppColors.emeraldLight,
           elevation: 0,
-          centerTitle: true,
+          centerTitle: false,
+          titleTextStyle: TextStyle(
+            color: AppColors.emeraldLight,
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         cardTheme: CardThemeData(
           color: AppColors.surface,
-          elevation: 1,
+          elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
+            side: const BorderSide(color: AppColors.border, width: 0.5),
           ),
         ),
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          selectedItemColor: AppColors.primary,
+          backgroundColor: AppColors.surface,
+          selectedItemColor: AppColors.emerald,
           unselectedItemColor: AppColors.textSecondary,
           type: BottomNavigationBarType.fixed,
+          elevation: 0,
         ),
-        textTheme: _textTheme(Brightness.light),
         dividerColor: AppColors.divider,
+        textTheme: _textTheme(Brightness.light),
       );
 
   static ThemeData get dark => ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primaryLight,
+          seedColor: AppColors.emeraldMedium,
           brightness: Brightness.dark,
-          primary: AppColors.primaryLight,
-          secondary: AppColors.accent,
+          primary: AppColors.emeraldMedium,
+          secondary: AppColors.goldMedium,
           surface: AppColors.darkSurface,
           error: AppColors.error,
         ),
@@ -55,40 +69,59 @@ class AppTheme {
           backgroundColor: AppColors.darkSurface,
           foregroundColor: AppColors.darkTextPrimary,
           elevation: 0,
-          centerTitle: true,
+          centerTitle: false,
         ),
         cardTheme: CardThemeData(
           color: AppColors.darkSurface,
-          elevation: 1,
+          elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
+            side: BorderSide(
+              color: Colors.white.withValues(alpha: 0.08),
+              width: 0.5,
+            ),
           ),
         ),
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
           backgroundColor: AppColors.darkSurface,
-          selectedItemColor: AppColors.primaryLight,
+          selectedItemColor: AppColors.emeraldMedium,
           unselectedItemColor: AppColors.darkTextSecondary,
           type: BottomNavigationBarType.fixed,
+          elevation: 0,
         ),
         textTheme: _textTheme(Brightness.dark),
         dividerColor: AppColors.darkTextSecondary.withValues(alpha: 0.3),
       );
 
   static TextTheme _textTheme(Brightness brightness) {
-    final base = brightness == Brightness.light
-        ? ThemeData.light().textTheme
-        : ThemeData.dark().textTheme;
-    return base.copyWith(
-      headlineMedium: GoogleFonts.poppins(
-        fontWeight: FontWeight.w600,
-        fontSize: 20,
-      ),
-      titleMedium: GoogleFonts.poppins(
-        fontWeight: FontWeight.w500,
-        fontSize: 16,
-      ),
-      bodyLarge: GoogleFonts.poppins(fontSize: 16),
-      bodyMedium: GoogleFonts.poppins(fontSize: 14),
+    final textColor = brightness == Brightness.light
+        ? AppColors.textPrimary
+        : AppColors.darkTextPrimary;
+    const fallback = ['Segoe UI', 'Roboto', 'Arial', 'sans-serif'];
+
+    TextStyle baseStyle({
+      required double fontSize,
+      FontWeight fontWeight = FontWeight.normal,
+    }) {
+      return GoogleFonts.poppins(
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        color: textColor,
+        decoration: TextDecoration.none,
+        height: 1.5,
+      ).copyWith(fontFamilyFallback: fallback);
+    }
+
+    return TextTheme(
+      headlineMedium: baseStyle(fontSize: 20, fontWeight: FontWeight.w600),
+      titleMedium: baseStyle(fontSize: 16, fontWeight: FontWeight.w500),
+      titleSmall: baseStyle(fontSize: 14, fontWeight: FontWeight.w600),
+      bodyLarge: baseStyle(fontSize: 16),
+      bodyMedium: baseStyle(fontSize: 14),
+      bodySmall: baseStyle(fontSize: 12),
+      labelLarge: baseStyle(fontSize: 14, fontWeight: FontWeight.w500),
+      labelMedium: baseStyle(fontSize: 12),
+      labelSmall: baseStyle(fontSize: 11),
     );
   }
 
@@ -97,13 +130,14 @@ class AppTheme {
     Color? color,
     FontWeight? fontWeight,
     double? letterSpacing,
+    double? height,
   }) {
     return GoogleFonts.scheherazadeNew(
       fontSize: fontSize,
       color: color,
       fontWeight: fontWeight ?? FontWeight.w600,
-      height: 1.45,
-      letterSpacing: letterSpacing ?? 0.8,
+      height: height ?? 2.0,
+      letterSpacing: letterSpacing ?? 1.0,
     );
   }
 }

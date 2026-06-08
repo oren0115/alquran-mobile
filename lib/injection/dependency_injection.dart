@@ -56,7 +56,6 @@ final getTafsirProvider = Provider<GetTafsir>(
 );
 
 // --- Settings keys ---
-const String prefDarkMode = 'dark_mode';
 const String prefQari = 'qari';
 const String prefLastReadSurah = 'last_read_surah';
 const String prefLastReadAyat = 'last_read_ayat';

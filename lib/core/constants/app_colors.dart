@@ -3,16 +3,29 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  static const Color primary = Color(0xFF0D6E4F);
-  static const Color primaryDark = Color(0xFF084A36);
-  static const Color primaryLight = Color(0xFF1A9B6F);
-  static const Color accent = Color(0xFFD4AF37);
-  static const Color background = Color(0xFFF5F7F6);
+  // Palet wireframe — hijau zamrud & emas
+  static const Color emerald = Color(0xFF0F6E56);
+  static const Color emeraldMedium = Color(0xFF1D9E75);
+  static const Color emeraldLight = Color(0xFFE1F5EE);
+  static const Color emeraldDark = Color(0xFF085041);
+  static const Color emeraldSubtext = Color(0xFF9FE1CB);
+
+  static const Color gold = Color(0xFFBA7517);
+  static const Color goldMedium = Color(0xFFEF9F27);
+  static const Color goldLight = Color(0xFFFAEEDA);
+  static const Color goldDark = Color(0xFF633806);
+
+  static const Color primary = emerald;
+  static const Color primaryDark = emeraldDark;
+  static const Color primaryLight = emeraldMedium;
+  static const Color accent = goldMedium;
+  static const Color background = Color(0xFFF7FAF8);
   static const Color surface = Colors.white;
   static const Color textPrimary = Color(0xFF1A1A1A);
   static const Color textSecondary = Color(0xFF6B7280);
   static const Color error = Color(0xFFB91C1C);
-  static const Color divider = Color(0xFFE5E7EB);
+  static const Color divider = Color(0x2E0F6E56); // rgba(15,110,86,0.18)
+  static const Color border = Color(0x2E0F6E56);
 
   // Dark mode
   static const Color darkBackground = Color(0xFF0F1419);
