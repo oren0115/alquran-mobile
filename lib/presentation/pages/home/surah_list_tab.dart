@@ -58,7 +58,7 @@ class SurahListTabState extends ConsumerState<SurahListTab> {
               controller: _searchController,
               focusNode: widget.searchFocusNode,
               onChanged: (value) {
-                ref.read(searchQueryProvider.notifier).state = value;
+                ref.read(searchQueryProvider.notifier).setQuery(value);
               },
             ),
           ),
@@ -78,7 +78,7 @@ class SurahListTabState extends ConsumerState<SurahListTab> {
                     active: filter == SurahFilter.all,
                     onTap: () => ref
                         .read(surahFilterProvider.notifier)
-                        .state = SurahFilter.all,
+                        .setFilter(SurahFilter.all),
                   ),
                   const SizedBox(width: 4),
                   QFilterTag(
@@ -92,7 +92,7 @@ class SurahListTabState extends ConsumerState<SurahListTab> {
                     active: filter == SurahFilter.makkiyah,
                     onTap: () => ref
                         .read(surahFilterProvider.notifier)
-                        .state = SurahFilter.makkiyah,
+                        .setFilter(SurahFilter.makkiyah),
                   ),
                   const SizedBox(width: 4),
                   QFilterTag(
@@ -100,7 +100,7 @@ class SurahListTabState extends ConsumerState<SurahListTab> {
                     active: filter == SurahFilter.madaniyah,
                     onTap: () => ref
                         .read(surahFilterProvider.notifier)
-                        .state = SurahFilter.madaniyah,
+                        .setFilter(SurahFilter.madaniyah),
                   ),
                 ],
               ),
@@ -153,7 +153,7 @@ class SurahListTabState extends ConsumerState<SurahListTab> {
   }
 
   void _showJuzPicker(BuildContext context) {
-    ref.read(surahFilterProvider.notifier).state = SurahFilter.juz;
+    ref.read(surahFilterProvider.notifier).setFilter(SurahFilter.juz);
     showModalBottomSheet<void>(
       context: context,
       builder: (ctx) {
@@ -183,8 +183,8 @@ class SurahListTabState extends ConsumerState<SurahListTab> {
   }
 
   void _filterByJuz(int juz) {
-    ref.read(searchQueryProvider.notifier).state = '';
+    ref.read(searchQueryProvider.notifier).setQuery('');
     _searchController.clear();
-    ref.read(selectedJuzProvider.notifier).state = juz;
+    ref.read(selectedJuzProvider.notifier).selectJuz(juz);
   }
 }

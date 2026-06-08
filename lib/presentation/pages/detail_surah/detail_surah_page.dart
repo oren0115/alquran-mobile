@@ -211,7 +211,7 @@ class _DetailAyatTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bookmarks = ref.watch(bookmarkListProvider).valueOrNull ?? [];
+    final bookmarks = ref.watch(bookmarkListProvider).value ?? [];
     final isBookmarked = bookmarks.any(
       (b) => b.nomorSurah == nomorSurah && b.nomorAyat == ayat.nomorAyat,
     );

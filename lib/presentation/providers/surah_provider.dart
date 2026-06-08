@@ -38,9 +38,26 @@ class SurahListNotifier extends AsyncNotifier<List<SurahEntity>> {
 enum SurahFilter { all, juz, makkiyah, madaniyah }
 
 final surahFilterProvider =
-    StateProvider<SurahFilter>((ref) => SurahFilter.all);
+    NotifierProvider<SurahFilterNotifier, SurahFilter>(
+  SurahFilterNotifier.new,
+);
 
-final selectedJuzProvider = StateProvider<int?>((ref) => null);
+class SurahFilterNotifier extends Notifier<SurahFilter> {
+  @override
+  SurahFilter build() => SurahFilter.all;
+
+  void setFilter(SurahFilter filter) => state = filter;
+}
+
+final selectedJuzProvider =
+    NotifierProvider<SelectedJuzNotifier, int?>(SelectedJuzNotifier.new);
+
+class SelectedJuzNotifier extends Notifier<int?> {
+  @override
+  int? build() => null;
+
+  void selectJuz(int? juz) => state = juz;
+}
 
 final filteredSurahProvider = Provider<AsyncValue<List<SurahEntity>>>((ref) {
   final asyncList = ref.watch(surahListProvider);
