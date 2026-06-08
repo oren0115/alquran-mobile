@@ -28,7 +28,7 @@ class SettingsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
-    final surahList = ref.watch(surahListProvider).valueOrNull;
+    final surahList = ref.watch(surahListProvider).value;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final muted =
