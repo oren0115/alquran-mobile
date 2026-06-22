@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'core/constants/app_text.dart';
-import 'core/constants/app_theme.dart';
-import 'injection/dependency_injection.dart';
-import 'presentation/routes/app_routes.dart';
+import 'cubit/audio_cubit.dart';
+import 'cubit/bookmark_cubit.dart';
+import 'cubit/settings_cubit.dart';
+import 'cubit/surah_cubit.dart';
+import 'pages/routes/app_routes.dart';
+import 'pages/theme/app_text.dart';
+import 'pages/theme/app_theme.dart';
+import 'services/service_locator.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final container = await initDependencies();
+  await ServiceLocator.instance.init();
 
-  runApp(
-    UncontrolledProviderScope(
-      container: container,
-      child: const AlQuranApp(),
-    ),
-  );
+  runApp(const AlQuranApp());
 }
 
 class AlQuranApp extends StatelessWidget {
@@ -23,12 +22,20 @@ class AlQuranApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: AppText.appName,
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      initialRoute: AppRoutes.splash,
-      onGenerateRoute: AppRoutes.generateRoute,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => SurahCubit()..loadSurah()),
+        BlocProvider(create: (_) => BookmarkCubit()..loadBookmarks()),
+        BlocProvider(create: (_) => SettingsCubit()),
+        BlocProvider(create: (_) => AudioCubit()),
+      ],
+      child: MaterialApp(
+        title: AppText.appName,
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light,
+        initialRoute: AppRoutes.splash,
+        onGenerateRoute: AppRoutes.generateRoute,
+      ),
     );
   }
 }
