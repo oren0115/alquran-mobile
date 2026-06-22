@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'cubit/audio_cubit.dart';
 import 'cubit/bookmark_cubit.dart';
+import 'cubit/doa_cubit.dart';
 import 'cubit/settings_cubit.dart';
+import 'cubit/shalat_cubit.dart';
 import 'cubit/surah_cubit.dart';
 import 'pages/routes/app_routes.dart';
 import 'pages/theme/app_text.dart';
@@ -27,6 +29,8 @@ class AlQuranApp extends StatelessWidget {
         BlocProvider(create: (_) => SurahCubit()..loadSurah()),
         BlocProvider(create: (_) => BookmarkCubit()..loadBookmarks()),
         BlocProvider(create: (_) => SettingsCubit()),
+        BlocProvider(create: (_) => ShalatCubit()..loadJadwal()),
+        BlocProvider(create: (_) => DoaCubit()),
         BlocProvider(create: (_) => AudioCubit()),
       ],
       child: MaterialApp(

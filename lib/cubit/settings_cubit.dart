@@ -14,6 +14,8 @@ class SettingsCubit extends Cubit<SettingsState> {
             lastReadSurah:
                 ServiceLocator.instance.settingsService.lastReadSurah,
             lastReadAyat: ServiceLocator.instance.settingsService.lastReadAyat,
+            provinsi: ServiceLocator.instance.settingsService.provinsi,
+            kabkota: ServiceLocator.instance.settingsService.kabkota,
           ),
         );
 
@@ -27,5 +29,10 @@ class SettingsCubit extends Cubit<SettingsState> {
   Future<void> saveLastRead(int surah, int ayat) async {
     await _settingsService.saveLastRead(surah, ayat);
     emit(state.copyWith(lastReadSurah: surah, lastReadAyat: ayat));
+  }
+
+  Future<void> setLocation(String provinsi, String kabkota) async {
+    await _settingsService.setLocation(provinsi, kabkota);
+    emit(state.copyWith(provinsi: provinsi, kabkota: kabkota));
   }
 }

@@ -116,6 +116,46 @@ class SettingsPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
+                    const SectionTitle(title: AppText.lokasiShalat),
+                    QCard(
+                      onTap: () => Navigator.pushNamed(context, AppRoutes.shalat),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on_outlined,
+                            color: AppColors.emerald,
+                            size: 22,
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  settings.kabkota,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                                Text(
+                                  settings.provinsi,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.muted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.chevron_right,
+                            color: AppColors.muted,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
                     const SectionTitle(title: AppText.audioSettings),
                     QCard(
                       child: DropdownButtonFormField<String>(

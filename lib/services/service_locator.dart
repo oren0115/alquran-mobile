@@ -4,8 +4,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
 import 'bookmark_service.dart';
 import 'dio_client.dart';
+import 'doa_service.dart';
 import 'quran_service.dart';
 import 'settings_service.dart';
+import 'shalat_service.dart';
 
 class ServiceLocator {
   ServiceLocator._();
@@ -15,6 +17,8 @@ class ServiceLocator {
   late final QuranService quranService;
   late final BookmarkService bookmarkService;
   late final SettingsService settingsService;
+  late final ShalatService shalatService;
+  late final DoaService doaService;
 
   Future<void> init() async {
     await Hive.initFlutter();
@@ -27,5 +31,7 @@ class ServiceLocator {
     quranService = QuranService(apiService);
     bookmarkService = BookmarkService(bookmarkBox);
     settingsService = SettingsService(prefs);
+    shalatService = ShalatService(apiService);
+    doaService = DoaService();
   }
 }

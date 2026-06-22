@@ -5,9 +5,12 @@ import '../../cubit/detail_surah_cubit.dart';
 import '../../cubit/tafsir_cubit.dart';
 import '../bookmark/bookmark_page.dart';
 import '../detail_surah/detail_surah_page.dart';
+import '../doa/doa_detail_page.dart';
+import '../doa/doa_page.dart';
 import '../home/home_page.dart';
 import '../murottal/murottal_page.dart';
 import '../settings/settings_page.dart';
+import '../shalat/shalat_page.dart';
 import '../splash/splash_page.dart';
 
 class AppRoutes {
@@ -19,6 +22,9 @@ class AppRoutes {
   static const String bookmark = '/bookmark';
   static const String murottal = '/murottal';
   static const String settings = '/settings';
+  static const String shalat = '/shalat';
+  static const String doa = '/doa';
+  static const String doaDetail = '/doa-detail';
 
   static Route<dynamic> generateRoute(RouteSettings routeSettings) {
     switch (routeSettings.name) {
@@ -53,6 +59,16 @@ class AppRoutes {
         );
       case settings:
         return MaterialPageRoute(builder: (_) => const SettingsPage());
+      case shalat:
+        return MaterialPageRoute(builder: (_) => const ShalatPage());
+      case doa:
+        return MaterialPageRoute(builder: (_) => const DoaPage());
+      case doaDetail:
+        final doaArgs = routeSettings.arguments as Map<String, dynamic>?;
+        final doaId = doaArgs?['id'] as int? ?? 1;
+        return MaterialPageRoute(
+          builder: (_) => DoaDetailPage(doaId: doaId),
+        );
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
@@ -77,6 +93,18 @@ class AppRoutes {
       context,
       murottal,
       arguments: {'nomor': nomor},
+    );
+  }
+
+  static void goToDoa(BuildContext context) {
+    Navigator.pushNamed(context, doa);
+  }
+
+  static void goToDoaDetail(BuildContext context, int id) {
+    Navigator.pushNamed(
+      context,
+      doaDetail,
+      arguments: {'id': id},
     );
   }
 }

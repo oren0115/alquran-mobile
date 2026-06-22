@@ -5,7 +5,7 @@ class AppText {
   static const String appNameUpper = 'AL-QUR\'AN';
   static const String appNameArabic = 'الْقُرْآنُ الْكَرِيمُ';
   static const String appTagline = 'Baca · Dengarkan · Pahami';
-  static const String appVersion = 'v1.0.0 · EQuran API';
+  static const String appVersion = 'v1.1.0 · EQuran API';
 
   // Navigasi
   static const String beranda = 'Beranda';
@@ -29,6 +29,26 @@ class AppText {
   static const String quickJuz = 'Juz';
   static const String quickTafsir = 'Tafsir';
   static const String quickMurottal = 'Murottal';
+  static const String quickDoa = 'Doa';
+  static const String nextPrayer = 'Sholat berikutnya';
+  static const String jadwalShalat = 'Jadwal Shalat';
+  static const String jadwalHariIni = 'Jadwal Hari Ini';
+  static const String lokasiShalat = 'Lokasi Shalat';
+  static const String provinsi = 'Provinsi';
+  static const String kabkota = 'Kabupaten/Kota';
+  static const String lihatJadwal = 'Lihat Jadwal';
+  static const String sumberShalat = 'Sumber: EQuran.id · Kemenag RI';
+
+  // Doa
+  static const String doaTitle = 'Doa & Dzikir';
+  static const String doaSubtitle = 'doa tersedia';
+  static const String searchDoaHint = 'Cari doa, terjemahan, atau tag...';
+  static const String emptyDoa = 'Doa tidak ditemukan.';
+  static const String doaArab = 'Teks Arab';
+  static const String doaLatin = 'Transliterasi';
+  static const String doaTerjemahan = 'Terjemahan';
+  static const String doaReferensi = 'Referensi';
+  static const String sumberDoa = 'Sumber: EQuran.id · Hisnul Muslim';
 
   // Halaman
   static const String searchHint = 'Cari surah atau ayat...';

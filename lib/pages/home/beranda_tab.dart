@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../cubit/settings_cubit.dart';
 import '../../cubit/settings_state.dart';
+import '../../cubit/shalat_cubit.dart';
+import '../../cubit/shalat_state.dart';
 import '../../cubit/surah_cubit.dart';
 import '../../cubit/surah_state.dart';
 import '../../models/surah.dart';
@@ -26,12 +28,10 @@ class BerandaTab extends StatelessWidget {
     super.key,
     required this.onNavigateToTab,
     required this.onFocusSearch,
-    required this.onShowJuzPicker,
   });
 
   final ValueChanged<int> onNavigateToTab;
   final VoidCallback onFocusSearch;
-  final VoidCallback onShowJuzPicker;
 
   Surah? _findSurah(List<Surah> list, int nomor) {
     for (final s in list) {
@@ -87,6 +87,24 @@ class BerandaTab extends StatelessWidget {
                         AppSpacing.md,
                       ),
                       children: [
+                        BlocBuilder<ShalatCubit, ShalatState>(
+                          builder: (context, shalatState) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _ShalatCard(
+                                  settings: settings,
+                                  shalatState: shalatState,
+                                  onTap: () => Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.shalat,
+                                  ),
+                                ),
+                                const SizedBox(height: AppSpacing.sm),
+                              ],
+                            );
+                          },
+                        ),
                         if (lastReadSurah != null && lastReadNomor != null)
                           _LastReadCard(
                             surah: lastReadSurah,
@@ -112,20 +130,20 @@ class BerandaTab extends StatelessWidget {
                             const SizedBox(width: AppSpacing.xs),
                             Expanded(
                               child: _MenuButton(
-                                icon: Icons.grid_view_rounded,
-                                label: AppText.quickJuz,
-                                onTap: onShowJuzPicker,
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.xs),
-                            Expanded(
-                              child: _MenuButton(
                                 icon: Icons.auto_stories_outlined,
                                 label: AppText.quickTafsir,
                                 onTap: () => AppRoutes.goToDetailSurah(
                                   context,
                                   lastReadNomor ?? 1,
                                 ),
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
+                            Expanded(
+                              child: _MenuButton(
+                                icon: Icons.back_hand_outlined,
+                                label: AppText.quickDoa,
+                                onTap: () => AppRoutes.goToDoa(context),
                               ),
                             ),
                             const SizedBox(width: AppSpacing.xs),
@@ -175,6 +193,141 @@ class BerandaTab extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ShalatCard extends StatelessWidget {
+  const _ShalatCard({
+    required this.settings,
+    required this.shalatState,
+    required this.onTap,
+  });
+
+  final SettingsState settings;
+  final ShalatState shalatState;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final next = shalatState.nextPrayer;
+    final loading =
+        shalatState.status == ShalatStatus.loading &&
+        shalatState.jadwal == null;
+    final error =
+        shalatState.status == ShalatStatus.error && shalatState.jadwal == null;
+
+    return QCard(
+      variant: QCardVariant.gold,
+      onTap: onTap,
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      child: loading
+          ? const SizedBox(
+              height: 56,
+              child: Center(
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.mosque_outlined,
+                      size: 18,
+                      color: AppColors.goldDark.withValues(alpha: 0.85),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        '${settings.kabkota}, ${settings.provinsi}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppColors.goldDark.withValues(alpha: 0.75),
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right,
+                      size: 18,
+                      color: AppColors.goldDark.withValues(alpha: 0.6),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                if (error)
+                  Text(
+                    AppText.errorGeneric,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppColors.goldDark.withValues(alpha: 0.85),
+                    ),
+                  )
+                else if (next != null)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              AppText.nextPrayer,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.goldDark.withValues(
+                                  alpha: 0.85,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              next.name,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.goldDark,
+                              ),
+                            ),
+                            Text(
+                              '± ${next.remainingLabel}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.goldDark.withValues(
+                                  alpha: 0.75,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Text(
+                        next.time,
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.goldDark,
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  Text(
+                    AppText.lihatJadwal,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.goldDark.withValues(alpha: 0.85),
+                    ),
+                  ),
+              ],
+            ),
     );
   }
 }
@@ -302,10 +455,7 @@ class _MenuButton extends StatelessWidget {
 }
 
 class _PopularSurahCard extends StatelessWidget {
-  const _PopularSurahCard({
-    required this.surah,
-    required this.onTap,
-  });
+  const _PopularSurahCard({required this.surah, required this.onTap});
 
   final Surah surah;
   final VoidCallback onTap;

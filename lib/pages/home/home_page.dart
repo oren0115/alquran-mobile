@@ -29,10 +29,6 @@ class _HomePageState extends State<HomePage> {
     _surahListKey.currentState?.focusSearch();
   }
 
-  void _showJuzPicker() {
-    _surahListKey.currentState?.showJuzPicker();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,7 +39,6 @@ class _HomePageState extends State<HomePage> {
           BerandaTab(
             onNavigateToTab: (index) => setState(() => _currentIndex = index),
             onFocusSearch: _focusSearch,
-            onShowJuzPicker: _showJuzPicker,
           ),
           SurahListTab(
             key: _surahListKey,
