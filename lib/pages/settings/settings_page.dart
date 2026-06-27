@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../../cubit/bookmark_cubit.dart';
 import '../../cubit/bookmark_state.dart';
 import '../../cubit/settings_cubit.dart';
@@ -29,13 +28,6 @@ class SettingsPage extends StatelessWidget {
     return null;
   }
 
-  String _initials(String name) {
-    final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.isEmpty || parts.first.isEmpty) return 'P';
-    if (parts.length == 1) return parts.first[0].toUpperCase();
-    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
-  }
-
   @override
   Widget build(BuildContext context) {
     final content = BlocBuilder<SettingsCubit, SettingsState>(
@@ -53,50 +45,6 @@ class SettingsPage extends StatelessWidget {
                 return ListView(
                   padding: const EdgeInsets.all(AppSpacing.sm),
                   children: [
-                    QCard(
-                      padding: const EdgeInsets.all(AppSpacing.sm),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 28,
-                            backgroundColor: AppColors.emeraldLight,
-                            child: Text(
-                              _initials(AppText.defaultUserName),
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.emeraldDark,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  AppText.defaultUserName,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  AppText.joinedSince,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.muted,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
                     QCard(
                       padding: const EdgeInsets.symmetric(
                         vertical: AppSpacing.sm,
@@ -118,7 +66,8 @@ class SettingsPage extends StatelessWidget {
                     const SizedBox(height: AppSpacing.sm),
                     const SectionTitle(title: AppText.lokasiShalat),
                     QCard(
-                      onTap: () => Navigator.pushNamed(context, AppRoutes.shalat),
+                      onTap: () =>
+                          Navigator.pushNamed(context, AppRoutes.shalat),
                       child: Row(
                         children: [
                           const Icon(
@@ -289,7 +238,7 @@ class SettingsPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const PageHeader(title: AppText.profil),
+            const PageHeader(title: AppText.settings),
             Expanded(child: content),
           ],
         ),

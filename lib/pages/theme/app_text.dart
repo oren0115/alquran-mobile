@@ -11,7 +11,6 @@ class AppText {
   static const String beranda = 'Beranda';
   static const String surah = 'Surah';
   static const String bookmark = 'Bookmark';
-  static const String profil = 'Profil';
   static const String quran = 'Surah';
   static const String simpan = 'Bookmark';
   static const String home = 'Surah';
@@ -19,7 +18,6 @@ class AppText {
 
   // Beranda
   static const String greeting = 'Assalamu\'alaikum,';
-  static const String defaultUserName = 'Pengguna';
   static const String lastRead = 'Terakhir Dibaca';
   static const String continueReading = 'Lanjutkan';
   static const String mainMenu = 'Menu Utama';
@@ -76,7 +74,7 @@ class AppText {
   static const String bookmarkTitle = 'Bookmark';
   static const String bookmarkSubtitle = 'Tandai ayat favoritmu';
 
-  // Profil
+  // Pengaturan
   static const String joinedSince = 'Bergabung sejak Januari 2024';
   static const String statSurahRead = 'Surah Dibaca';
   static const String statBookmark = 'Bookmark';

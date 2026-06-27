@@ -48,8 +48,7 @@ class BerandaTab extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           PageHeader(
-            title: AppText.defaultUserName,
-            subtitle: AppText.greeting,
+            title: AppText.greeting,
           ),
           Expanded(
             child: BlocBuilder<SurahCubit, SurahState>(

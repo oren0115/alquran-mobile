@@ -158,7 +158,7 @@ class OutlineActionButton extends StatelessWidget {
   }
 }
 
-/// Stat item di halaman profil.
+/// Stat item di halaman pengaturan.
 class StatItem extends StatelessWidget {
   const StatItem({
     super.key,

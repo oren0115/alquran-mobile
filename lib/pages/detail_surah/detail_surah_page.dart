@@ -16,12 +16,10 @@ import '../../services/formatter.dart';
 import '../../services/helpers.dart';
 import '../../services/html_utils.dart';
 import '../../services/juz_helper.dart';
-import '../routes/app_routes.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text.dart';
 import '../theme/app_theme.dart';
-import '../widgets/page_header.dart';
 import '../widgets/app_topbar.dart';
 import '../widgets/ayat_card.dart';
 import '../widgets/error_widget.dart';
@@ -68,8 +66,7 @@ class _DetailSurahPageState extends State<DetailSurahPage> {
                   message: Helpers.extractErrorMessage(
                     detailState.errorMessage ?? 'Error',
                   ),
-                  onRetry: () =>
-                      context.read<DetailSurahCubit>().refresh(),
+                  onRetry: () => context.read<DetailSurahCubit>().refresh(),
                 ),
               );
             }
@@ -155,39 +152,6 @@ class _DetailSurahPageState extends State<DetailSurahPage> {
                               ),
                             ),
                           ),
-                        if (!_showTafsir && surah.nomor != 9)
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(
-                              AppSpacing.sm,
-                              AppSpacing.xs,
-                              AppSpacing.sm,
-                              0,
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: OutlineActionButton(
-                                    icon: Icons.headphones_outlined,
-                                    label: AppText.listen,
-                                    expanded: true,
-                                    onTap: () => AppRoutes.goToMurottal(
-                                      context,
-                                      surah.nomor,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: AppSpacing.xs),
-                                Expanded(
-                                  child: OutlineActionButton(
-                                    icon: Icons.share_outlined,
-                                    label: AppText.share,
-                                    expanded: true,
-                                    onTap: () {},
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                         Expanded(
                           child: _showTafsir
                               ? _TafsirSection(nomor: surah.nomor)
@@ -199,7 +163,8 @@ class _DetailSurahPageState extends State<DetailSurahPage> {
                                   itemCount: surah.ayat.length,
                                   itemBuilder: (context, index) {
                                     final ayat = surah.ayat[index];
-                                    final playing = audioState.matches(
+                                    final playing =
+                                        audioState.matches(
                                           surah.nomor,
                                           ayat.nomorAyat,
                                         ) &&
@@ -209,15 +174,15 @@ class _DetailSurahPageState extends State<DetailSurahPage> {
                                       nomorSurah: surah.nomor,
                                       isHighlighted: playing,
                                       isPlaying: playing,
-                                      isLoading: audioState.matches(
+                                      isLoading:
+                                          audioState.matches(
                                             surah.nomor,
                                             ayat.nomorAyat,
                                           ) &&
                                           audioState.isLoading,
                                       onPlay: () =>
                                           _playAyat(ayat, settings.qari),
-                                      onBookmark: () =>
-                                          _toggleBookmark(ayat),
+                                      onBookmark: () => _toggleBookmark(ayat),
                                     );
                                   },
                                 ),
@@ -237,15 +202,12 @@ class _DetailSurahPageState extends State<DetailSurahPage> {
   Future<void> _playAyat(Ayat ayat, String qari) async {
     final error = await context.read<AudioCubit>().toggleAyat(ayat, qari);
     if (!mounted || error == null) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(error)),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
   }
 
   Future<void> _toggleBookmark(Ayat ayat) async {
     try {
-      final added =
-          await context.read<BookmarkCubit>().toggleBookmark(ayat);
+      final added = await context.read<BookmarkCubit>().toggleBookmark(ayat);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

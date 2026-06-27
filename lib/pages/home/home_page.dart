@@ -68,9 +68,9 @@ class _HomePageState extends State<HomePage> {
             label: AppText.bookmark,
           ),
           AppBottomNavItem(
-            icon: Icons.person_outline,
-            activeIcon: Icons.person,
-            label: AppText.profil,
+            icon: Icons.settings_outlined,
+            activeIcon: Icons.settings,
+            label: AppText.settings,
           ),
         ],
       ),
